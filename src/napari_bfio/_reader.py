@@ -5,7 +5,186 @@ It implements the Reader specification, but your plugin may choose to
 implement multiple readers or even other plugin contributions. see:
 https://napari.org/stable/plugins/guides.html?#readers
 """
+import os
+import logging
 import numpy as np
+
+BIOFORMATS_EXT = [
+    '.1sc',
+    '.2fl',
+    '.acff',
+    '.afi',
+    '.afm',
+    '.aim',
+    '.al3d',
+    '.ali',
+    '.am',
+    '.amiramesh',
+    '.apl',
+    '.arf',
+    '.avi',
+    '.bif',
+    '.bin',
+    '.bip',
+    '.bmp',
+    '.btf',
+    '.c01',
+    '.cfg',
+    '.ch5',
+    '.cif',
+    '.cr2',
+    '.crw',
+    '.cxd',
+    '.dat',
+    '.db',
+    '.dcm',
+    '.dib',
+    '.dicom',
+    '.dm2',
+    '.dm3',
+    '.dm4',
+    '.dti',
+    '.dv',
+    '.eps',
+    '.epsi',
+    '.exp',
+    '.fdf',
+    '.fff',
+    '.ffr',
+    '.fits',
+    '.flex',
+    '.fli',
+    '.frm',
+    '.gel',
+    '.gif',
+    '.grey',
+    '.h5',
+    '.hdf',
+    '.hdr',
+    '.hed', 
+    '.his',
+    '.htd',
+    '.hx', 
+    '.i2i',
+    '.ics',
+    '.ids',
+    '.im3',
+    '.img',
+    '.img', 
+    '.ims',
+    '.inr',
+    '.ipl',
+    '.ipm',
+    '.ipw',
+    '.j2k',
+    '.jp2',
+    '.jpeg',
+    '.jpf',
+    '.jpg',
+    '.jpk',
+    '.jpx',
+    '.klb',
+    '.l2d',
+    '.labels',
+    '.lei',
+    '.lif',
+    '.liff',
+    '.lim',
+    '.lms',
+    '.lof',
+    '.lsm',
+    '.map',
+    '.mdb',
+    '.mea',
+    '.mnc',
+    '.mng',
+    '.mod',
+    '.mov',
+    '.mrc',
+    '.mrcs',
+    '.mrw',
+    '.msr',
+    '.mtb',
+    '.mvd2',
+    '.naf',
+    '.nd',
+    '.nd2',
+    '.ndpi',
+    '.ndpis',
+    '.nef',
+    '.nhdr',
+    '.nii',
+    '.nii.gz',
+    '.nrrd',
+    '.obf',
+    '.obsep',
+    '.oib',
+    '.oif',
+    '.oir',
+    '.omp2info',
+    '.par',
+    '.pbm',
+    '.pcoraw',
+    '.pcx',
+    '.pds',
+    '.pgm',
+    '.pic',
+    '.pict',
+    '.png',
+    '.pnl',
+    '.ppm',
+    '.pr3',
+    '.ps',
+    '.psd',
+    '.qptiff',
+    '.r3d', 
+    '.raw',
+    '.rcpnl',
+    '.rec',
+    '.res',
+    '.scn',
+    '.sdt',
+    '.seq',
+    '.sif',
+    '.sld',
+    '.sldy',
+    '.sm2',
+    '.sm3',
+    '.spc',
+    '.spe',
+    '.spi',
+    '.st',
+    '.stk',
+    '.stp',
+    '.svs',
+    '.sxm', 
+    '.tf2',
+    '.tf8',
+    '.tfr',
+    '.tga',
+    '.tif',
+    '.tif', 
+    '.tiff',
+    '.tnb',
+    '.top',
+    '.txt',
+    '.v',
+    '.vff',
+    '.vms',
+    '.vsi',
+    '.vws',
+    '.wat',
+    '.wpi',
+    '.xdce',
+    '.xlef',
+    '.xqd',
+    '.xqf',
+    '.xv',
+    '.xys',
+    '.zfp',
+    '.zfr',
+    '.zvi',
+]
 
 def is_type_supported(path):
     if path.endswith(".ome.tiff"):
@@ -15,7 +194,11 @@ def is_type_supported(path):
     elif path.endswith(".ome.zarr"):
         return True
     else:
-        return False
+        file_ext = os.path.splitext(path)[1]
+        if file_ext in BIOFORMATS_EXT:
+            return True
+        else:
+            return False
 
 def napari_get_reader(path):
     """A basic implementation of a Reader contribution.
@@ -73,6 +256,19 @@ def reader_function(path):
     layer_data = []
     from bfio import BioReader # import as late as possible
     for _path in paths:
+        file_ext = os.path.splitext(path)[1]
+        if not (_path.endswith(".ome.zarr") or _path.endswith(".ome.tiff") or _path.endswith(".ome.tif")): 
+            try:
+                import bioformats_jar
+            except ModuleNotFoundError:
+                file_ext_wo_dot = file_ext.lstrip(".")
+                logging.error("The bioformats_jar Python package is not present. "
+                        + f"*.{file_ext_wo_dot} file reading is supported by bioformats-jar Python package."
+                        + f"Install bioformats-jar using pip or do 'pip install bfio[all]'"      
+                        )     
+                # loading dummy data of [[0,0],[0,0]]
+                layer_data.append(( np.squeeze(np.zeros(shape=(2,2))),{}))                        
+                continue
         br = BioReader(_path)
         layer_data.append((np.squeeze(br.read()), {"metadata":br.metadata}))
     
