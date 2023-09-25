@@ -187,18 +187,15 @@ BIOFORMATS_EXT = [
 
 
 def is_type_supported(path):
-    if path.lower().endswith(".ome.tiff"):
-        return True
-    elif path.lower().endswith(".ome.tif"):
-        return True
-    elif path.lower().endswith(".ome.zarr"):
+    if (
+        path.lower().endswith(".ome.tiff")
+        or path.lower().endswith(".ome.tif")
+        or path.lower().endswith(".ome.zarr")
+    ):
         return True
     else:
         file_ext = os.path.splitext(path)[1].lower()
-        if file_ext in BIOFORMATS_EXT:
-            return True
-        else:
-            return False
+        return file_ext in BIOFORMATS_EXT
 
 
 def napari_get_reader(path):
