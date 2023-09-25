@@ -19,27 +19,21 @@ if TYPE_CHECKING:
 
 
 def write_single_image(path: str, data: Any, meta: dict) -> List[str]:
-    
     """Writes a single image layer"""
     # need to check if we need to run in a seperate thread to stop GUI from freezing
-    
+
     from bfio import BioWriter
-    # if this image is loaded via bfio BioReader, we will have a non-empty metadata
-    if (meta["metadata"] != {}): 
-        try:
-            ome_data = ome_types.model.OME(**meta["metadata"])
-        except ome_types.ValidationError:
-            ome_data = None
 
-        if ome_data != None: # a high chance we read this using bfio
-            with BioWriter(path, metadata=ome_data) as bw:
-                while data.ndim < 5:
-                    data = data[..., np.newaxis]
+    # if this image is loaded via bfio BioReader, we will have a ome_types.model.OME metadata object
+    if isinstance(meta["metadata"], ome_types.model.OME):
+        with BioWriter(path, metadata=meta["metadata"]) as bw:
+            while data.ndim < 5:
+                data = data[..., np.newaxis]
 
-                bw[:] = data
+            bw[:] = data
 
         return [path]
-    else: # we are reading some other data that is not OME Tiff/ Zarr and also not loaded via bfio
+    else:  # we are reading some other data that is not OME Tiff/ Zarr and also not loaded via bfio
         if meta["rgb"]:
             BioWriter.logger.info("The BioWriter cannot write color images.")
             return None
@@ -53,11 +47,13 @@ def write_single_image(path: str, data: Any, meta: dict) -> List[str]:
 
         return [path]
 
+
 def write_multiple(path: str, data: List[FullLayerData]) -> List[str]:
     """Writes multiple layers of different types."""
 
     # implement your writer logic here ...
     from bfio import BioWriter
+
     BioWriter.logger.info("Bfio: Multi-file writing not yet supported.")
     return None
     # return path to any file(s) that were successfully written

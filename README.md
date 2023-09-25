@@ -27,13 +27,7 @@ You can install `napari-bfio` via [pip]:
 
     pip install napari-bfio
 
-`napari-bfio` depends on `bfio` package to read/write the data. By default, `bfio` package and the core dependencies (numpy, tifffile, imagecodecs) are installed during the installation process of `napari-bfio`. 
-
-Additionally, `bfio` with other dependencies can be installed:
-
-1. `pip install bfio[bioformats]` - Adds support for BioFormats/Java. See [License](#license) for additional information.
-2. `pip install bfio[zarr]` - Adds support for OME Zarr
-3. `pip install bfio[all]` - Installs all dependencies.
+`napari-bfio` depends on `bfio` package to read/write the data. By default, `bfio` package and the core dependencies (numpy, tifffile, imagecodecs, scyjava) are installed during the installation process of `napari-bfio`.
 
 To install latest development version :
 
@@ -49,11 +43,6 @@ the coverage at least stays the same before you submit a pull request.
 
 Distributed under the terms of the [MIT] license,
 "napari-bfio" is free and open source software
-
-**NOTE**
-
-Bioformats is licensed under GPL, and as a consequence so is the `bioformats_jar` 
-package. These packages and libraries are installed when using the `bfio[bioformats]` option.
 
 ## Issues
 

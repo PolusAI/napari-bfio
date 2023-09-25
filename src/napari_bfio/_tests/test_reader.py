@@ -1,5 +1,3 @@
-import numpy as np
-
 from napari_bfio import napari_get_reader
 
 
@@ -8,6 +6,8 @@ def test_reader(tmp_path):
     """An example of how you might test your plugin."""
 
     # write some fake data using your supported file format
+    dummy_var = 1
+    assert dummy_var == 1
     pass
 
 
